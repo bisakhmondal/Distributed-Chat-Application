@@ -1,0 +1,27 @@
+.login{
+    /* align-self:center; */
+    /* margin: 5rem; */
+    align-items: center;
+    background-color: linear-gradient(135deg, rgba(48, 48, 48, 0.22), rgba(255,255,255,0.25));
+    box-shadow: 
+    12px 12px 16px 0 rgba(0, 0, 0, 0.25),
+    -8px -8px 12px 0 rgba(209, 209, 209, 0.3);
+    border-radius: 25px;
+    display: flex;
+    min-height: 250px;
+    justify-content: center;
+    width: 200px;
+    margin: 5rem;
+    flex-direction: column;
+}
+@font-face {
+    font-family: 'Dot';
+    src: local('Dot'), url(../fonts/DotGothic16-Regular.ttf) format('truetype');
+  }
+  
+
+.ow {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    hyphens: auto;
+  }

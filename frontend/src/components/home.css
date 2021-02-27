@@ -1,0 +1,115 @@
+.App {
+    text-align: center;
+  }
+  
+  /* @media (prefers-reduced-motion: no-preference) {
+    .App-logo {
+      animation: App-logo-spin infinite 20s linear;
+    }
+  } */
+  
+  @font-face {
+    font-family: 'OpenSans';
+    src: local('OpenSans'), url(../fonts/OpenSans-Regular.ttf) format('truetype');
+  }
+  
+  .element {
+    align-items: center;
+    background-color: linear-gradient(135deg, rgba(48, 48, 48, 0.22), rgba(255,255,255,0.25));
+    box-shadow: 
+    12px 12px 16px 0 rgba(0, 0, 0, 0.25),
+    -8px -8px 12px 0 rgba(209, 209, 209, 0.3);
+    border-radius: 25px;
+    display: flex;
+    height: 350px;
+    justify-content: center;
+    width: 300px;
+    margin: 5rem;
+  }
+  
+  h1{
+    font-family: OpenSans, Arial, serif;
+  }
+  .App-header {
+    background-color: #282c34;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(10px + 2vmin);
+    color: white;
+  }
+  
+  .App-link {
+    color: #61dafb;
+  }
+  
+  @keyframes App-logo-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  
+  .neumorphic {
+    box-shadow: 12px 12px 24px 0 rgba(0, 0, 0, 0.2),
+      -12px -12px 24px 0 rgba(143, 143, 143, 0.3);
+    /* font-size: 2rem; */
+    align-items: center;
+    justify-content: center;
+    align-self: center  ;
+  
+    border-radius: 20px;
+    overflow: hidden;
+    padding: 1.3rem;
+    display: flex;
+  }
+  
+  .neumorphic--pressed {
+    box-shadow: inset 6px 6px 10px 0 rgba(0, 0, 0, 0.2),
+      inset -6px -6px 10px 0 rgba(124, 124, 124, 0.5);
+  }
+  
+  .variation2 {
+    justify-content: space-around;
+    /* align-items: center; */
+    /* width: 50px;
+    height: 50px; */
+  }
+  
+  .variation2 span::after {
+    content: "";
+  
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: block;
+    height: 0.3rem;
+    border-radius: 1rem;
+    width: 50%;
+    margin: 0 auto;
+    background-color: currentColor;
+  }
+  
+  .variation2.notpressed {
+    color: whitesmoke;
+    background-color: #0585c5;
+  }
+  .variation2.pressed {
+    color: #0585c5;
+    background-color: whitesmoke;
+  }
+  
+  input { border: none ;
+    font-size:15px;
+    margin: 0;
+    padding: 0;
+    color:black;
+}
+  input:focus {
+    outline: none !important;
+  }
