@@ -39,24 +39,68 @@ const App = () => {
     },[selt])
     
     const [connected, setConnected] = React.useState(false)
+    const [img, setImg] = React.useState(null)
     const [isBroadCast, setIsBroadCast] = React.useState(false);
+    const [toUser, setToUser] = React.useState('');
   
   
     const send = () =>{
-    const data = {
-      time: new Date(),
-      user: user,
-      room: room,
-      data: input,
-      broadcast: Number(isBroadCast)
+      const isUnicast = !isBroadCast && (toUser!=='')
+      if(!isBroadCast && room===""){
+        alert("Only Broadcast & DM are allowed Without joining any room")
+        return
+      }
+      if(room==="" && !isBroadCast && !isUnicast){
+        alert("Either Join a chatroom or Broadcast or use Direct Messaging")
+        return
+      }
+    
+    if(img){
+
+      //converting to base64
+      let reader = new FileReader();
+      reader.readAsDataURL(img)
+
+      reader.onload = () =>{
+        
+        const data = {
+          time: new Date(),
+          user: user,
+          room: room,
+          data: reader.result,
+          type: "image",
+          broadcast: Number(isBroadCast),
+          unicast: isUnicast,
+          toUser: toUser
+        }
+        socket.emit('message', JSON.stringify(data))
+        setImg(null)
+      }
     }
-    socket.emit('message', JSON.stringify(data))
-    setInput("")    
+
+
+    if(input!==""){
+    
+      const data = {
+        time: new Date(),
+        user: user,
+        room: room,
+        data: input,
+        type: "text",
+        broadcast: Number(isBroadCast),
+        unicast: isUnicast,
+        toUser: toUser
+      }
+      socket.emit('message', JSON.stringify(data))
+      setInput("")
+  }
+
   }
   const Connect = () => {
     setConnected(true)
     socket.emit('join',JSON.stringify({
-      room:room
+      room:room,
+      user:user, 
     }))
 
     setelt([])
@@ -65,7 +109,7 @@ const App = () => {
   return (
 
     // <DashBoard /> 
-    <div>
+    <div style={{fontFamily:"OpenSans"}}>
       <div className="App">
       <h1 className="p-3"><strong><span style={{color:"blue"}}>B</span>Chat</strong> A Multi Room Chat Application</h1> 
       </div>
@@ -86,14 +130,34 @@ const App = () => {
       }
     <h1>Messages: </h1>
      
-      <ul>
-        {elt.filter(e=> e !==null).map(data => <li key={data.time}>{new Date(data.time).toLocaleString()} ::: {data.broadcast?`!!Global Broadcast!!`:``} {data.user}: {data.data}</li>)}
-      </ul>
-      <hr />
+     <div className="wrap" >
 
-      <div style={{position:"fixed", bottom:0}}>
+      <ul>
+        {elt
+        .filter(e=> e !==null)
+        .map(data => {
+        
+        if(data.type==="text")
+          return <li key={data.time}>{new Date(data.time).toLocaleString()} - <span style={{color:"red"}}>{data.broadcast?`!!Global Broadcast!!`:``}</span> {data.user} :- {data.data}</li>
+        return <li key={data.time}>{new Date(data.time).toLocaleString()} - <span style={{color:"red"}}>{data.broadcast?`!!Global Broadcast!!`:``}</span> {data.user} :- <img src={data.data} height="256" width="300"/></li>
+
+        }
+        )}
+        </ul>
+      <hr />
+     
+     </div>
+
+      <div className="footer">
     <label>Enter Message &nbsp;</label> 
     <input value={input} onChange={e=> setInput(e.target.value)} placeholder="Enter Your Message" />
+      
+    <input type="file" onChange={e=> setImg(e.target.files[0])} placeholder="Upload image" id="upload-photo" style={{display:"none"}}/>
+    <label htmlFor="upload-photo">
+    {
+      img ? <div><span>{img.name} {Math.round(img.size/ (1024))} KB</span></div> : <div><h4 style={{fontFamily:"OpenSans"}}>Click to Upload Image</h4></div>
+            }
+    </label>
     <br />
     <br />
 
@@ -109,7 +173,7 @@ const App = () => {
     <br />
 
     <label>Personal One to One DM &nbsp;</label>
-    <input value={input} onChange={e=> setInput(e.target.value)} placeholder="@ Direct Messaging" />
+    <input value={toUser} onChange={e=> setToUser(e.target.value)} placeholder="@ Direct Messaging" />
 
     </div>
     <br />
