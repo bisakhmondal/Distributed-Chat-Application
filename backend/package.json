@@ -4,12 +4,15 @@
   "description": "Backend for chat Multiroom chat Application",
   "main": "app.js",
   "scripts": {
-    "test": "nodemon app.js"
+    "start": "nodemon app.js"
   },
   "author": "Bisakh Mondal",
   "license": "MIT",
   "dependencies": {
     "express": "^4.17.1",
     "socket.io": "^3.1.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
   }
 }

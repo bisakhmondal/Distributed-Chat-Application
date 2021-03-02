@@ -104,8 +104,9 @@
     background-color: whitesmoke;
   }
   
-  input { border: none ;
-    font-size:15px;
+  input { 
+    border: none ;
+    font-size: 18px;
     margin: 0;
     padding: 0;
     color:black;
