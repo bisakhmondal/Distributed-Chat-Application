@@ -1,0 +1,55 @@
+version: '3'
+
+services:
+  lb:
+    image: haproxy
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./haproxy:/usr/local/etc/haproxy
+    depends_on:
+      - chatapp1
+      - chatapp2
+      - chatapp3
+      - chatapp4
+
+  chatapp1:
+    image: chatapp
+    hostname: 'chatapp1'
+    environment:
+      - SERVER_NAME=chatAPP-1
+      - REDIS_HOST=rds
+    depends_on: 
+      - rds
+
+  chatapp2:
+    image: chatapp
+    hostname: 'chatapp2'
+    environment:
+      - SERVER_NAME=chatAPP-2
+      - REDIS_HOST=rds
+    depends_on: 
+      - rds
+
+  chatapp3:
+    image: chatapp
+    hostname: 'chatapp3'
+    environment:
+      - SERVER_NAME=chatAPP-3
+      - REDIS_HOST=rds
+    depends_on: 
+      - rds
+
+  chatapp4:
+    image: chatapp
+    hostname: 'chatapp4'
+    environment:
+      - SERVER_NAME=chatAPP-4
+      - REDIS_HOST=rds
+    depends_on: 
+      - rds
+  
+  rds:
+    image: redis
+
+

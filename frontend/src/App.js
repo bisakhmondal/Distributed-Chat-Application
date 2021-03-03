@@ -5,7 +5,10 @@ import DashBoard from "./screens/dashboard"
 // var ws = new WebSocket("ws://localhost:8080")
 import socketIOClient from "socket.io-client";
 const ENDPOINT = "http://localhost:8080"
-var socket = socketIOClient(ENDPOINT)
+var socket = socketIOClient(ENDPOINT,{
+  // WARNING: in that case, there is no fallback to long-polling
+  transports: [ "websocket" ] // or [ "websocket", "polling" ] (the order matters)
+})
 
 const App = () => {
   // <Home />
@@ -28,8 +31,11 @@ const App = () => {
         setselt(data)
       })
 
+      socket.on('log', msg=> console.log(msg))
+
       return ()=>{
         socket.off('message')
+        socket.off('log')
       }
     },[])
 
