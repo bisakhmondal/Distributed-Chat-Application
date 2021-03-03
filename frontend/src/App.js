@@ -1,29 +1,23 @@
 import React from "react"
 import Home from "./components/home"
-// import Chat from "./components/chat"
 import DashBoard from "./screens/dashboard"
-// var ws = new WebSocket("ws://localhost:8080")
+import Scroll from "./components/leftscroll"
+import axios from "axios"
 import socketIOClient from "socket.io-client";
 const ENDPOINT = "http://localhost:8080"
 var socket = socketIOClient(ENDPOINT,{
-  // WARNING: in that case, there is no fallback to long-polling
-  transports: [ "websocket" ] // or [ "websocket", "polling" ] (the order matters)
+  transports: [ "websocket" ] 
 })
 
 const App = () => {
-  // <Home />
-  
-  
-  // ws.onopen = () =>{
-    //   console.log("socket openned")
-    //   ws.send(JSON.stringify({"user":"Bisakh", "room":"Hawas"}))
-    // }
-    
+      
     const [input, setInput] = React.useState("")
     const [room, setRoom] = React.useState("")
     const [user, setUser] = React.useState("")
     const [elt, setelt] = React.useState([])
     const [selt, setselt] = React.useState(null)
+    const [roomlist, setRoomlist] = React.useState([])
+
     React.useEffect(()=>{
       socket.on("message",  msg =>{
         const data = JSON.parse(msg)
@@ -31,11 +25,21 @@ const App = () => {
         setselt(data)
       })
 
+      socket.on('room', msg =>{
+        const data = JSON.parse(msg)
+        console.log(data)
+        setRoomlist(data)
+      })
+
       socket.on('log', msg=> console.log(msg))
+
+      //fetch initial rooms
+      // axios.get('http://localhost:8080/rooms').then(res =>{}).catch(err=>{})
 
       return ()=>{
         socket.off('message')
         socket.off('log')
+        socket.off('room')
       }
     },[])
 
@@ -115,11 +119,12 @@ const App = () => {
   return (
 
     // <DashBoard /> 
-    <div style={{fontFamily:"OpenSans"}}>
+    <div style={{fontFamily:"OpenSans", padding:20}}>
       <div className="App">
       <h1 className="p-3"><strong><span style={{color:"blue"}}>B</span>Chat</strong> A Multi Room Chat Application</h1> 
       </div>
-      <h1> Room Info </h1>
+      <Scroll rooms={roomlist}/>
+      <h1 style={{color:"#820000"}}> Room Info </h1>
       {!connected ?
       <div>
     <input value={user} onChange={e=> setUser(e.target.value)} placeholder="@Username" />
@@ -129,14 +134,14 @@ const App = () => {
         :
         
         <div>
-          <h3>Username: {user}</h3>
-          <h3>Room: {room}</h3>
+          <h4>Username: {user}</h4>
+          <h4>Room: {room}</h4>
           <button onClick={()=> setConnected(false)}> Edit</button>
           </div>
       }
-    <h1>Messages: </h1>
+    <h1 style={{color:"#820000"}}>Messages: </h1>
      
-     <div className="wrap" >
+     <div  style={{fontSize:"medium"}}>
 
       <ul>
         {elt
@@ -151,10 +156,11 @@ const App = () => {
         )}
         </ul>
       <hr />
+      <hr />
      
      </div>
 
-      <div className="footer">
+      <div >
     <label>Enter Message &nbsp;</label> 
     <input value={input} onChange={e=> setInput(e.target.value)} placeholder="Enter Your Message" />
       

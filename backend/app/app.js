@@ -54,47 +54,36 @@ io.on('connection', socket =>{
     
     socket.on('message', msg =>{
         
-        // console.log(msg)
-        
         publisher.publish('bchat-chats', msg)
         const data = JSON.parse(msg)
-        // if(data.broadcast){
-            //     //handling broadcast
-            //     io.emit('message', msg)
-            // }else
-            if(data.unicast){
-                //handling unicast
-                socket.emit('message', msg)
-                
-                // if(data.toUser in connections){
-                    //     io.to(connections[data.toUser]).emit('message', msg)
-                    //     socket.emit('message', msg)
-                    // }
-                }
-                // else{
-                    //     //handling multicast
-                    //     io.to(data.room).emit('message', msg)
-                    // }
-                })
-                
-                socket.on("join", msg =>{
-                    const data = JSON.parse(msg)
-                    connections[data.user] = socket.id
-                    socket.join(data.room)
+        if(data.unicast){
+            //handling unicast
+            socket.emit('message', msg)
+            }if(data.unicast){
+            //handling unicast
+            socket.emit('message', msg)
+            }
+        }
+    )
+        
+    socket.on("join", msg =>{
+        const data = JSON.parse(msg)
+        connections[data.user] = socket.id
+        socket.join(data.room)
 
-                    //cache new room
-                    publisher.get(data.room, (err, reply)=>{
-                        if(!reply){
-                            publisher.set(data.room, '1')
-                            publisher.lpush(['roomP', data.room],(err, r) =>{})
-                            //dummy publish to make aware the other servers that a new rooms has created
-                            publisher.publish('bchat-rooms', "1")
-                        }
-                    })
+        //cache new room
+        publisher.get(data.room, (err, reply)=>{
+            if(!reply){
+                publisher.set(data.room, '1')
+                publisher.lpush(['roomBCHAT', data.room],(err, r) =>{})
+                //dummy publish to make aware the other servers that a new rooms has created
+                publisher.publish('bchat-rooms', "1")
+            }
+        })
 
 
-                    socket.emit('log', `app is connected at ${SERVER_NAME}`)
-                })
+        socket.emit('log', `app is connected at ${SERVER_NAME}`)
+    })
                 
 })
 
@@ -127,8 +116,8 @@ subscriber.on('message', (channel, msg) =>{
 })
 
 subscriber2.on('message', (c, m) =>{
-    publisher.lrange('roomP',0,-1, (err, reply)=>{
-        console.log(reply)
+    publisher.lrange('roomBCHAT',0,-1, (err, reply)=>{
+        io.emit('room', JSON.stringify(reply))
     })
 })
 
