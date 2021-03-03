@@ -61,6 +61,11 @@ var connections = {}
 io.on('connection', socket =>{
 
     socket.emit('log', `app is connected at ${SERVER_NAME}`)
+
+    //send initial room info 
+    publisher.lrange('roomBCHAT',0,-1, (err, reply)=>{
+        socket.emit('room', JSON.stringify(reply))
+    })
     
     socket.on('message', async msg =>{
         

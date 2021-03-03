@@ -33,9 +33,6 @@ const App = () => {
 
       socket.on('log', msg=> console.log(msg))
 
-      //fetch initial rooms
-      // axios.get('http://localhost:8080/rooms').then(res =>{}).catch(err=>{})
-
       return ()=>{
         socket.off('message')
         socket.off('log')
@@ -56,7 +53,7 @@ const App = () => {
   
     const send = () =>{
       const isUnicast = !isBroadCast && (toUser!=='')
-      
+
       if(room==="" && !isBroadCast && !isUnicast){
         alert("Either Join a chatroom or Broadcast or use Direct Messaging")
         return
