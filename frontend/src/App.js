@@ -56,10 +56,7 @@ const App = () => {
   
     const send = () =>{
       const isUnicast = !isBroadCast && (toUser!=='')
-      if(!isBroadCast && room===""){
-        alert("Only Broadcast & DM are allowed Without joining any room")
-        return
-      }
+      
       if(room==="" && !isBroadCast && !isUnicast){
         alert("Either Join a chatroom or Broadcast or use Direct Messaging")
         return
@@ -103,6 +100,7 @@ const App = () => {
       }
       socket.emit('message', JSON.stringify(data))
       setInput("")
+      setToUser("")
   }
 
   }
@@ -113,7 +111,11 @@ const App = () => {
       user:user, 
     }))
 
-    setelt([])
+    axios.post('http://localhost:8080/chat', {room:room, user:user}).then(res =>{
+      console.log(res)
+      if(res.status===200)
+        setelt(res.data)
+    })
   }
 
   return (
@@ -149,8 +151,8 @@ const App = () => {
         .map(data => {
         
         if(data.type==="text")
-          return <li key={data.time}>{new Date(data.time).toLocaleString()} - <span style={{color:"red"}}>{data.broadcast?`!!Global Broadcast!!`:``}</span> {data.user} :- {data.data}</li>
-        return <li key={data.time}>{new Date(data.time).toLocaleString()} - <span style={{color:"red"}}>{data.broadcast?`!!Global Broadcast!!`:``}</span> {data.user} :- <img src={data.data} height="256" width="300"/></li>
+          return <li key={data.time}>{new Date(data.time).toLocaleString()} - <span style={{color:"red"}}>{data.broadcast?`!!Global Broadcast!!`:(data.unicast?"!!Unicast!!":'!!Group Messaging!!')}</span> {data.user} {data.unicast?`-->${data.toUser}`:''} :- {data.data}</li>
+        return <li key={data.time}>{new Date(data.time).toLocaleString()} - <span style={{color:"red"}}>{data.broadcast?`!!Global Broadcast!!`:(data.unicast?"!!Unicast!!":'!!Group Messaging!!')}</span> {data.user} {data.unicast?`-->${data.toUser}`:''}:- <img src={data.data} height="256" width="300"/></li>
 
         }
         )}

@@ -19,8 +19,10 @@ services:
     environment:
       - SERVER_NAME=chatAPP-1
       - REDIS_HOST=rds
+      - MONGO=mongodb://mongo:27017/BChat
     depends_on: 
       - rds
+      - mongo
 
   chatapp2:
     image: chatapp
@@ -28,8 +30,10 @@ services:
     environment:
       - SERVER_NAME=chatAPP-2
       - REDIS_HOST=rds
+      - MONGO=mongodb://mongo:27017/BChat
     depends_on: 
       - rds
+      - mongo
 
   chatapp3:
     image: chatapp
@@ -37,8 +41,10 @@ services:
     environment:
       - SERVER_NAME=chatAPP-3
       - REDIS_HOST=rds
+      - MONGO=mongodb://mongo:27017/BChat
     depends_on: 
       - rds
+      - mongo
 
   chatapp4:
     image: chatapp
@@ -46,10 +52,18 @@ services:
     environment:
       - SERVER_NAME=chatAPP-4
       - REDIS_HOST=rds
+      - MONGO=mongodb://mongo:27017/BChat
     depends_on: 
       - rds
+      - mongo
   
   rds:
     image: redis
+
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    
 
 

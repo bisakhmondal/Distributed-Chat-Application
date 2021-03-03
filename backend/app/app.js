@@ -2,6 +2,7 @@ const express = require("express")
 const socketio = require("socket.io")
 const http = require("http")
 const redis = require('redis')
+const cors = require('cors')
 
 const SERVER_NAME = process.env.SERVER_NAME
 
@@ -36,6 +37,7 @@ const ServeChat = require('./routes/serveChats')
 // const { count } = require("console")
 
 app.use(express.json())
+app.use(cors())
 app.use('/chat', ServeChat)
 
 
@@ -43,6 +45,14 @@ app.get('/', (req, res)=> {
     res.send(`<h1>BChat Backend ${SERVER_NAME}</h1>`)
 })
 
+const mongoose = require('mongoose')
+const ChatSchema = require('./models/chat')
+
+mongoose.connect(process.env.MONGO || "mongodb://localhost:27017/BChat",
+    { useNewUrlParser: true,useUnifiedTopology: true },async (err)=>{
+        if(err) console.log(err.message);
+        else    console.log('DB connection successful');
+});
 
 //creating map of individual clients with socket id for unicast
 var connections = {}
@@ -52,14 +62,15 @@ io.on('connection', socket =>{
 
     socket.emit('log', `app is connected at ${SERVER_NAME}`)
     
-    socket.on('message', msg =>{
+    socket.on('message', async msg =>{
         
         publisher.publish('bchat-chats', msg)
         const data = JSON.parse(msg)
+
+        const Chat = new ChatSchema(data)
+        await Chat.save()   
+
         if(data.unicast){
-            //handling unicast
-            socket.emit('message', msg)
-            }if(data.unicast){
             //handling unicast
             socket.emit('message', msg)
             }
@@ -120,6 +131,8 @@ subscriber2.on('message', (c, m) =>{
         io.emit('room', JSON.stringify(reply))
     })
 })
+
+
 
 const PORT = process.env.PORT || 8080
 httpServer.listen(PORT, ()=> console.log(`Server Running @ ${PORT}`))
