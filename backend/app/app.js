@@ -1,10 +1,13 @@
 const express = require("express")
 const socketio = require("socket.io")
 const http = require("http")
+
+
+// s1 s2 s3 s4
 const redis = require('redis')
 const cors = require('cors')
 
-const SERVER_NAME = process.env.SERVER_NAME
+const SERVER_NAME = process.env.SERVER_NAME || "APP"
 
 const app = express()
 const httpServer = http.createServer(app)
@@ -22,6 +25,7 @@ const redisConfig = {
 const publisher = redis.createClient(redisConfig)
 const subscriber = redis.createClient(redisConfig)
 const subscriber2 = redis.createClient(redisConfig)
+const subscriber3 = redis.createClient(redisConfig)
 
 subscriber.on('subscribe', (channel, count)=>{
     console.log(`${SERVER_NAME} is subscribed to ${channel} successfully`)
@@ -31,6 +35,7 @@ subscriber.on('subscribe', (channel, count)=>{
 //setup listener
 subscriber.subscribe('bchat-chats')
 subscriber2.subscribe('bchat-rooms')
+subscriber3.subscribe('bchat-users')
 
 
 const ServeChat = require('./routes/serveChats')
@@ -96,7 +101,9 @@ io.on('connection', socket =>{
                 publisher.publish('bchat-rooms', "1")
             }
         })
+            publisher.lpush([`${data.room}_meta`, data.user],(err, r) =>{})
 
+            publisher.publish('bchat-users', data.room)
 
         socket.emit('log', `app is connected at ${SERVER_NAME}`)
     })
@@ -108,7 +115,7 @@ io.on('connection', socket =>{
 subscriber.on('message', (channel, msg) =>{
     try {
     
-        console.log("Redis: ", msg)
+        //console.log("Redis: ", msg)
         const data = JSON.parse(msg)
         
         if(data.broadcast){
@@ -137,7 +144,15 @@ subscriber2.on('message', (c, m) =>{
     })
 })
 
+subscriber3.on('message', (c, m) =>{
+    //send initial room info 
+    // console.log(m," : c : ", c)
 
+    publisher.lrange(`${m}_meta`,0,-1, (err, reply)=>{
+        // console.log("sending", reply)
+            io.to(m).emit('roomusers', JSON.stringify(reply))
+    })
+})
 
 const PORT = process.env.PORT || 8080
 httpServer.listen(PORT, ()=> console.log(`Server Running @ ${PORT}`))
