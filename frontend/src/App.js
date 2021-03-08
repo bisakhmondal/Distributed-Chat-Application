@@ -17,19 +17,33 @@ const App = () => {
     const [elt, setelt] = React.useState([])
     const [selt, setselt] = React.useState(null)
     const [roomlist, setRoomlist] = React.useState([])
+    const [userlist, setUserlist] = React.useState([])
+    // const [suser, setSuser] = React.useState(null)
 
+
+    
+    
     React.useEffect(()=>{
       socket.on("message",  msg =>{
         const data = JSON.parse(msg)
-        console.log(elt)
         setselt(data)
+      })
+      
+      socket.on('roomusers', msg =>{
+        let data = JSON.parse(msg)
+        const uniquedata = data.filter((elem, pos) => {
+          return data.indexOf(elem) == pos;
+      })
+        setUserlist(uniquedata)
       })
 
       socket.on('room', msg =>{
         const data = JSON.parse(msg)
-        console.log(data)
+        // console.log(data)
         setRoomlist(data)
       })
+
+      
 
       socket.on('log', msg=> console.log(msg))
 
@@ -37,6 +51,7 @@ const App = () => {
         socket.off('message')
         socket.off('log')
         socket.off('room')
+        socket.off('roomusers')
       }
     },[])
 
@@ -49,8 +64,8 @@ const App = () => {
     const [img, setImg] = React.useState(null)
     const [isBroadCast, setIsBroadCast] = React.useState(false);
     const [toUser, setToUser] = React.useState('');
-  
-  
+    const [dm ,setDm] = React.useState(false)
+    const [gm, setGm] = React.useState(true)
     const send = () =>{
       const isUnicast = !isBroadCast && (toUser!=='')
 
@@ -108,6 +123,17 @@ const App = () => {
       user:user, 
     }))
 
+    socket.emit('message', JSON.stringify({
+      time: new Date(),
+      user: '',
+      room: room,
+      data: `${user} has joined the Room!!`,
+      type: "text",
+      broadcast: 0,
+      unicast: false,
+      toUser: ''
+    }))
+
     axios.post('http://localhost:8080/chat', {room:room, user:user}).then(res =>{
       console.log(res)
       if(res.status===200)
@@ -115,14 +141,50 @@ const App = () => {
     })
   }
 
+  const getDM = async () =>{
+    if(user===""){
+      alert("Be a user first")
+      return
+    }
+    setDm(!dm)
+    setGm(!gm)
+
+    try{
+    const res = await axios.post('http://localhost:8080/chat/dm', {room:room, user:user})
+    // fetch('',)
+    if(res.status===200)
+    setelt(res.data)
+    }catch(err){
+
+    }
+
+    
+  }
+  const getGM = async () =>{
+    if(room===""){
+      alert("Join a room first")
+      return
+    }
+    setDm(!dm)
+    setGm(!gm)
+
+    try{
+      const res = await axios.post('http://localhost:8080/chat', {room:room, user:user})
+      console.log(res.data)
+      if(res.status===200)
+      setelt(res.data)
+      }catch(err){
+  
+      }
+  }
   return (
 
     // <DashBoard /> 
-    <div style={{fontFamily:"OpenSans", padding:20}}>
+    <div style={{fontFamily:"OpenSans", display:"flex", alignItems:"center", flexDirection:"column"}}>
       <div className="App">
       <h1 className="p-3"><strong><span style={{color:"blue"}}>B</span>Chat</strong> A Multi Room Chat Application</h1> 
       </div>
-      <Scroll rooms={roomlist}/>
+      <Scroll rooms={roomlist} users={userlist}/>
       <h1 style={{color:"#820000"}}> Room Info </h1>
       {!connected ?
       <div>
@@ -138,15 +200,45 @@ const App = () => {
           <button onClick={()=> setConnected(false)}> Edit</button>
           </div>
       }
-    <h1 style={{color:"#820000"}}>Messages: </h1>
+      <div className = "login" style={{alignSelf:"flex-start", position:"absolute"}}>
+        <h2 style={{paddingBottom:"2.5rem"}}>Filtering</h2>
+        <div class="row rt">
+            <div class={`neumorphic  variation2 ${dm?"pressed neumorphic--pressed" : "notpressed"}`} role="button" style={{cursor:"pointer"}} style={{cursor:"pointer"}}
+            onClick={getDM}
+            > 
+              <h6>Get Direct Messages</h6>
+            </div>
+        </div>
+        <div class="row rt" style={{marginTop:5}}>
+            <div class={`neumorphic  variation2 ${gm?"pressed neumorphic--pressed" : "notpressed"}`} style={{cursor:"pointer"}}
+            onClick={getGM}
+            > 
+            <h6>Get Group Messages</h6>
+            </div>
+        </div>
+      </div>
+    <h1 style={{color:"#820000"}}>Messages </h1>
      
      <div  style={{fontSize:"medium"}}>
 
       <ul>
-        {elt
+        {
+          (elt.length===0)?
+          <li>No messages here</li>
+          :
+        elt
         .filter(e=> e !==null)
         .map(data => {
         
+        if(dm && !data.unicast){
+          return
+        }
+        if(dm && data.data===`${user} has joined the Room!!`){
+          return
+        }
+        if (gm && data.unicast){
+          return
+        }
         if(data.type==="text")
           return <li key={data.time}>{new Date(data.time).toLocaleString()} - <span style={{color:"red"}}>{data.broadcast?`!!Global Broadcast!!`:(data.unicast?"!!Unicast!!":'!!Group Messaging!!')}</span> {data.user} {data.unicast?`-->${data.toUser}`:''} :- {data.data}</li>
         return <li key={data.time}>{new Date(data.time).toLocaleString()} - <span style={{color:"red"}}>{data.broadcast?`!!Global Broadcast!!`:(data.unicast?"!!Unicast!!":'!!Group Messaging!!')}</span> {data.user} {data.unicast?`-->${data.toUser}`:''}:- <img src={data.data} height="256" width="300"/></li>
