@@ -11,10 +11,9 @@ As the architecture itself depends some components for eg. `redis`, `mongodb`, `
 # go to backend 
 $ cd backend
 
-# build chatapp image
+# build the chatapp image
 $ docker build -t chatapp .
 
-$ cd backend
 $ docker-compose up # pass -d for detached mode
 
 # to stop the services
